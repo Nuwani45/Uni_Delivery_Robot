@@ -1,8 +1,8 @@
 
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { getAuth } from "firebase/auth";
 
-// Firebase project configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDW3Chza18OLI5mpuy_ppHe0cuAlZKwpBg",
   authDomain: "unidelivery-7b848.firebaseapp.com",
@@ -10,14 +10,13 @@ const firebaseConfig = {
   projectId: "unidelivery-7b848",
   storageBucket: "unidelivery-7b848.firebasestorage.app",
   messagingSenderId: "262206738438",
-  appId: "1:262206738438:web:8597d68b48e7e46076b387"
+  appId: "1:262206738438:web:8597d68b48e7e46076b387",
+  measurementId: "G-L0SB11WXYE"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Connect to Realtime Database
 export const database = getDatabase(app);
+export const auth = getAuth(app);
 
 export default app;
-    

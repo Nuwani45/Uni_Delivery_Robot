@@ -1,5 +1,10 @@
-import testFirebase from "./firebaseTest";
 import { useEffect, useState } from "react";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { auth } from "./firebase";
 import "./App.css";
 
 /* ==========================================================================
@@ -235,8 +240,7 @@ function DashboardShell({
 /* ==========================================================================
    LANDING PORTAL
    ========================================================================== */
-
-function Portal({ onOpen }) {
+function Portal({ onOpen, onLogout }) {
   return (
     <div className="portal">
       <svg className="portal-art" viewBox="0 0 600 300" aria-hidden="true">
@@ -299,11 +303,11 @@ function Portal({ onOpen }) {
           FRONTEND SIMULATION · No robot hardware is connected yet
         </div>
         <button
-          className="primary-button"
-          onClick={testFirebase}
+          className="secondary-button"
+          onClick={onLogout}
           style={{ marginTop: "20px" }}
         >
-          Test Firebase Connection
+          Sign Out
         </button>
       </div>
     </div>
@@ -1606,30 +1610,235 @@ function OperationsDashboard({ onHome }) {
     </DashboardShell>
   );
 }
+/* ==========================================================================
+   FIREBASE LOGIN
+   ========================================================================== */
+
+function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin(event) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+    } catch (error) {
+      console.error("Login error:", error);
+
+      if (
+        error.code === "auth/invalid-credential" ||
+        error.code === "auth/wrong-password" ||
+        error.code === "auth/user-not-found"
+      ) {
+        setError("Incorrect email or password.");
+      } else if (error.code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else {
+        setError("Unable to sign in. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+        background: "#0b1120",
+        color: "#f8fafc",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <form
+        onSubmit={handleLogin}
+        style={{
+          width: "100%",
+          maxWidth: "420px",
+          padding: "36px",
+          borderRadius: "16px",
+          background: "#151f32",
+          border: "1px solid #29364c",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "30px" }}>
+          <div style={{ fontSize: "42px", fontWeight: "bold" }}>
+            U<span style={{ color: "#38bdf8" }}>D</span>
+          </div>
+
+          <h1 style={{ marginBottom: "8px" }}>UniDelivery</h1>
+
+          <p style={{ color: "#94a3b8", fontSize: "13px" }}>
+            ROBOTICS MANAGEMENT SYSTEM
+          </p>
+
+          <p style={{ color: "#cbd5e1", marginTop: "24px" }}>
+            Sign in to access the control portal.
+          </p>
+        </div>
+
+        <label style={{ display: "block", marginBottom: "8px" }}>
+          Email address
+        </label>
+
+        <input
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="Enter your email"
+          required
+          autoComplete="username"
+          style={{
+            boxSizing: "border-box",
+            width: "100%",
+            padding: "13px",
+            marginBottom: "20px",
+            borderRadius: "8px",
+            border: "1px solid #475569",
+            background: "#0f172a",
+            color: "white",
+          }}
+        />
+
+        <label style={{ display: "block", marginBottom: "8px" }}>
+          Password
+        </label>
+
+        <input
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Enter your password"
+          required
+          autoComplete="current-password"
+          style={{
+            boxSizing: "border-box",
+            width: "100%",
+            padding: "13px",
+            marginBottom: "20px",
+            borderRadius: "8px",
+            border: "1px solid #475569",
+            background: "#0f172a",
+            color: "white",
+          }}
+        />
+
+        {error && (
+          <p style={{ color: "#f87171", fontSize: "13px" }}>
+            {error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "14px",
+            border: "none",
+            borderRadius: "8px",
+            background: "#0891b2",
+            color: "white",
+            fontWeight: "bold",
+            cursor: loading ? "wait" : "pointer",
+          }}
+        >
+          {loading ? "Signing in..." : "Sign In"}
+        </button>
+
+        <p
+          style={{
+            textAlign: "center",
+            color: "#64748b",
+            fontSize: "12px",
+            marginTop: "24px",
+          }}
+        >
+          Authorised users only
+        </p>
+      </form>
+    </div>
+  );
+}
+/* ==========================================================================
+   APP ROOT
+   ========================================================================== */
 
 /* ==========================================================================
    APP ROOT
    ========================================================================== */
 
 function App() {
-  const [view, setView] = useState("portal"); // portal | maintenance | operations
+  const [view, setView] = useState("portal");
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Check whether a Firebase user is signed in.
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view]);
 
-  // Dashboards stay mounted (just hidden) so their simulated state is kept
-  // while the user moves back to the portal.
+  // Wait until Firebase checks the authentication state.
+  if (authLoading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+          background: "#0b1120",
+          color: "white",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        Loading UniDelivery...
+      </div>
+    );
+  }
+
+  // Show login screen if nobody is signed in.
+  if (!user) {
+    return <LoginScreen />;
+  }
+
+  // Show the existing dashboards after successful login.
   return (
     <>
       <div hidden={view !== "portal"}>
-        <Portal onOpen={setView} />
+        <Portal
+          onOpen={setView}
+          onLogout={() => signOut(auth)}
+        />
       </div>
+
       <div hidden={view !== "maintenance"}>
-        <MaintenanceDashboard onHome={() => setView("portal")} />
+        <MaintenanceDashboard
+          onHome={() => setView("portal")}
+        />
       </div>
+
       <div hidden={view !== "operations"}>
-        <OperationsDashboard onHome={() => setView("portal")} />
+        <OperationsDashboard
+          onHome={() => setView("portal")}
+        />
       </div>
     </>
   );
