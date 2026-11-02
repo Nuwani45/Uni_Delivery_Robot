@@ -1,3 +1,4 @@
+import testFirebase from "./firebaseTest";
 import { useEffect, useState } from "react";
 import "./App.css";
 
@@ -297,6 +298,13 @@ function Portal({ onOpen }) {
           <span className="simulation-dot" />
           FRONTEND SIMULATION · No robot hardware is connected yet
         </div>
+        <button
+          className="primary-button"
+          onClick={testFirebase}
+          style={{ marginTop: "20px" }}
+        >
+          Test Firebase Connection
+        </button>
       </div>
     </div>
   );
