@@ -2298,3 +2298,18 @@ body,.dashboard,.auth,.auth-loading{background:var(--bg)}
 
 @media (max-width:1180px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-text{display:none}}
 @media (max-width:720px){.kpi-grid,.panel-row{grid-template-columns:1fr}.topbar-right{flex-wrap:wrap}.status-chip{font-size:12px}.delivery-track li{font-size:11px}}
+
+
+/* on-screen joystick */
+.joystick-pad{position:relative;width:min(220px,100%);aspect-ratio:1;margin:24px auto 16px;border-radius:50%;background:radial-gradient(circle,#1a3148 0%,#12233a 62%,#0e1b2e 100%);border:2px solid #2d4963;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.joystick-pad::before,.joystick-pad::after{content:"";position:absolute;background:rgba(79,196,207,.14)}
+.joystick-pad::before{left:50%;top:10%;bottom:10%;width:1px}
+.joystick-pad::after{top:50%;left:10%;right:10%;height:1px}
+.joystick-pad.active{cursor:grabbing;border-color:var(--cyan)}
+.joystick-pad:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}
+.joystick-knob{position:absolute;width:30%;height:30%;transform:translate(-50%,-50%);border-radius:50%;background:linear-gradient(145deg,#78dce2,#2b8da0);border:3px solid #28677a;box-shadow:0 6px 14px rgba(0,0,0,.35);pointer-events:none;transition:left .12s ease,top .12s ease}
+.joystick-pad.active .joystick-knob{transition:none}
+.joystick-readout{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.joystick-readout span{display:flex;flex-direction:column;gap:2px;padding:10px;background:#0b1522;border:1px solid var(--border);border-radius:8px;text-align:center}
+.joystick-readout small{color:var(--muted);font-size:12px}
+.joystick-readout strong{color:#9be4ea;font-variant-numeric:tabular-nums}
