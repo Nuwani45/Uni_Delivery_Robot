@@ -129,6 +129,33 @@ function getPathPoints(phase, stationId) {
   return phase === "returning" ? [room, junction, DOCK] : [DOCK, junction, room];
 }
 
+const ICONS = {
+  "▦": (<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>),
+  "⚙": (<><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></>),
+  "⌖": (<><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></>),
+  "❄": (<><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/></>),
+  "◉": (<><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/></>),
+  "⌁": (<><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></>),
+  "✥": (<><path d="M12 2v20M2 12h20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"/></>),
+  "＋": (<><path d="M12 5v14M5 12h14"/></>),
+  "☰": (<><path d="M4 6h16M4 12h16M4 18h16"/></>),
+  "◎": (<><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></>),
+  "✓": (<><path d="M5 13l4 4L19 7"/></>),
+  "⌂": (<><path d="M3 11l9-8 9 8M5 10v10h14V10"/></>),
+  "◈": (<><path d="M12 3l9 9-9 9-9-9z"/></>),
+  "♨": (<><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/></>),
+  "▤": (<><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 12h18M10 8h4M10 16h4"/></>),
+  "◌": (<><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>),
+};
+
+function Icon({ g }) {
+  return ICONS[g] ? (
+    <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">{ICONS[g]}</svg>
+  ) : (
+    g
+  );
+}
+
 /* ==========================================================================
    SHARED DASHBOARD SHELL (sidebar + top bar + footer)
    ========================================================================== */
@@ -153,7 +180,7 @@ function DashboardShell({
             <div className="brand-mark">U<span>D</span></div>
             <div className="brand-name">
               <strong>UniDelivery</strong>
-              <small>ROBOTICS SYSTEMS</small>
+              <small>Robotics systems</small>
             </div>
           </div>
 
@@ -169,7 +196,7 @@ function DashboardShell({
                 aria-label={item.label}
                 title={item.label}
               >
-                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-icon"><Icon g={item.icon} /></span>
                 <span>{item.label}</span>
                 {page === item.label && <span className="active-indicator" />}
               </button>
@@ -183,7 +210,7 @@ function DashboardShell({
             aria-label="Back to main portal"
             title="Back to main portal"
           >
-            <span className="nav-icon">⌂</span>
+            <span className="nav-icon"><Icon g="⌂" /></span>
             <span>Main Portal</span>
           </button>
         </div>
@@ -202,7 +229,7 @@ function DashboardShell({
         <header className="topbar">
           <div className="page-heading">
             <div className="eyebrow">
-              UNIDELIVERY <span>/</span> {eyebrow}
+              UniDelivery <span>/</span> {eyebrow}
             </div>
             <h1>{page}</h1>
             <p>{subtitle}</p>
@@ -214,7 +241,7 @@ function DashboardShell({
             </button>
             <div className="simulation-pill">
               <span className="simulation-dot" />
-              SIMULATION MODE
+              Simulation mode
             </div>
             <div className="system-label">
               <span className="system-label-icon">UD</span>
@@ -256,7 +283,7 @@ function Portal({ onOpen, onLogout }) {
         <div className="portal-hero">
           <div className="portal-mark">U<span>D</span></div>
           <h1>UniDelivery</h1>
-          <div className="portal-subtitle">ROBOTICS MANAGEMENT SYSTEM</div>
+          <div className="portal-subtitle">Robotics management system</div>
           <p>
             Welcome to the UniDelivery control portal. Choose a dashboard to
             maintain the robot's hardware systems or to manage indoor
@@ -266,8 +293,8 @@ function Portal({ onOpen, onLogout }) {
 
         <div className="portal-cards">
           <article className="portal-card" onClick={() => onOpen("maintenance")}>
-            <div className="portal-card-icon">⚙</div>
-            <div className="section-kicker">TECHNICAL TEAM</div>
+            <div className="portal-card-icon"><Icon g="⚙" /></div>
+            <div className="section-kicker">Technical team</div>
             <h2>Maintenance Dashboard</h2>
             <p>
               Monitor and manage robot hardware, sensors, navigation and
@@ -277,13 +304,13 @@ function Portal({ onOpen, onLogout }) {
               className="primary-button portal-button"
               onClick={() => onOpen("maintenance")}
             >
-              Open Maintenance Dashboard <span>→</span>
+              Open maintenance dashboard
             </button>
           </article>
 
           <article className="portal-card" onClick={() => onOpen("operations")}>
-            <div className="portal-card-icon">☰</div>
-            <div className="section-kicker">AUTHORISED OPERATORS</div>
+            <div className="portal-card-icon"><Icon g="☰" /></div>
+            <div className="section-kicker">Authorised operators</div>
             <h2>Operations Dashboard</h2>
             <p>
               Manage deliveries, select destinations and monitor the robot's
@@ -293,19 +320,18 @@ function Portal({ onOpen, onLogout }) {
               className="primary-button portal-button"
               onClick={() => onOpen("operations")}
             >
-              Open Operations Dashboard <span>→</span>
+              Open operations dashboard
             </button>
           </article>
         </div>
 
         <div className="portal-note">
           <span className="simulation-dot" />
-          FRONTEND SIMULATION · No robot hardware is connected yet
+          Frontend simulation. No robot hardware is connected yet.
         </div>
         <button
-          className="secondary-button"
+          className="secondary-button portal-signout"
           onClick={onLogout}
-          style={{ marginTop: "20px" }}
         >
           Sign Out
         </button>
@@ -374,12 +400,12 @@ function MaintenanceDashboard({ onHome }) {
 
   return (
     <DashboardShell
-      sidebarLabel="MAINTENANCE"
+      sidebarLabel="Maintenance"
       navItems={navigationItems}
       page={page}
       onNavigate={setPage}
       onHome={onHome}
-      eyebrow="MAINTENANCE"
+      eyebrow="Maintenance"
       subtitle="Monitor, inspect and manage robot hardware systems."
       robotInfo={{ name: "UniDelivery Robot", line: "Maintenance Panel · v1.2" }}
       footerText="Maintenance Panel v1.2"
@@ -398,7 +424,7 @@ function MaintenanceDashboard({ onHome }) {
             <div className="overview-grid">
               <div className="stat-card">
                 <div className="stat-card-top">
-                  <span className="stat-icon cyan">◈</span>
+                  <span className="stat-icon cyan"><Icon g="◈" /></span>
                   <span className="mini-label">OPERATING MODE</span>
                 </div>
                 <p>Robot Status</p>
@@ -407,7 +433,7 @@ function MaintenanceDashboard({ onHome }) {
               </div>
               <div className="stat-card">
                 <div className="stat-card-top">
-                  <span className="stat-icon green">⌁</span>
+                  <span className="stat-icon green"><Icon g="⌁" /></span>
                   <span className="mini-label">POWER</span>
                 </div>
                 <p>Battery Level</p>
@@ -416,7 +442,7 @@ function MaintenanceDashboard({ onHome }) {
               </div>
               <div className="stat-card">
                 <div className="stat-card-top">
-                  <span className="stat-icon amber">♨</span>
+                  <span className="stat-icon amber"><Icon g="♨" /></span>
                   <span className="mini-label">THERMAL</span>
                 </div>
                 <p>Temperature</p>
@@ -425,7 +451,7 @@ function MaintenanceDashboard({ onHome }) {
               </div>
               <div className="stat-card">
                 <div className="stat-card-top">
-                  <span className="stat-icon violet">❄</span>
+                  <span className="stat-icon violet"><Icon g="❄" /></span>
                   <span className="mini-label">COOLING</span>
                 </div>
                 <p>Cooling Fan</p>
@@ -446,13 +472,13 @@ function MaintenanceDashboard({ onHome }) {
                 className="text-button"
                 onClick={() => setPage("Mapping & Navigation")}
               >
-                Open mapping <span>→</span>
+                Open mapping
               </button>
             </div>
 
             <div className="mapping-summary">
               <div className="mapping-summary-main">
-                <span className="stat-icon cyan">⌖</span>
+                <span className="stat-icon cyan"><Icon g="⌖" /></span>
                 <div>
                   <h3>{mapping}</h3>
                   <p>SLAM mapping status</p>
@@ -480,7 +506,7 @@ function MaintenanceDashboard({ onHome }) {
                 className="text-button"
                 onClick={() => setPage("Motor Control")}
               >
-                Manage motors <span>→</span>
+                Manage motors
               </button>
             </div>
 
@@ -522,7 +548,7 @@ function MaintenanceDashboard({ onHome }) {
 
             <div className="mapping-summary">
               <div className="mapping-summary-main">
-                <span className="stat-icon cyan">⌖</span>
+                <span className="stat-icon cyan"><Icon g="⌖" /></span>
                 <div>
                   <h3>{mapping}</h3>
                   <p>Mapping process</p>
@@ -596,7 +622,7 @@ function MaintenanceDashboard({ onHome }) {
             <div className="sensor-grid">
               {navigationDiagnostics.map(([name, value]) => (
                 <div className="sensor-card" key={name}>
-                  <span className="sensor-symbol">⌖</span>
+                  <span className="sensor-symbol"><Icon g="⌖" /></span>
                   <p>{name}</p>
                   <h3>{value}</h3>
                   <small>Awaiting hardware / software</small>
@@ -636,7 +662,7 @@ function MaintenanceDashboard({ onHome }) {
                 </div>
 
                 <label className="range-label" htmlFor={`motor-${motor.id}-pwm`}>
-                  PWM OUTPUT <span>{motor.pwm}</span>
+                  PWM output <span>{motor.pwm}</span>
                 </label>
                 <input
                   id={`motor-${motor.id}-pwm`}
@@ -697,13 +723,13 @@ function MaintenanceDashboard({ onHome }) {
           </div>
 
           <div className="cooling-card">
-            <div className="fan-icon">❄</div>
+            <div className="fan-icon"><Icon g="❄" /></div>
             <div className="section-kicker">MAIN COOLING UNIT</div>
             <h2>Main Cooling Fan</h2>
             <p>Fan operating state shown by the interface.</p>
             <div className={fan ? "large-status fan-on" : "large-status"}>
               <span className="status-dot" />
-              {fan ? "FAN RUNNING" : "FAN OFF"}
+              {fan ? "Fan running" : "Fan off"}
             </div>
             <button className="primary-button cooling-toggle" onClick={() => setFan(!fan)}>
               {fan ? "Turn Fan OFF" : "Turn Fan ON"}
@@ -763,7 +789,7 @@ function MaintenanceDashboard({ onHome }) {
           <div className="sensor-grid">
             {sensorReadings.map(([name, value]) => (
               <div className="sensor-card" key={name}>
-                <span className="sensor-symbol">⌁</span>
+                <span className="sensor-symbol"><Icon g="⌁" /></span>
                 <p>{name}</p>
                 <h3>{value}</h3>
                 <small>Waiting for hardware connection</small>
@@ -1102,12 +1128,12 @@ function OperationsDashboard({ onHome }) {
 
   return (
     <DashboardShell
-      sidebarLabel="OPERATIONS"
+      sidebarLabel="Operations"
       navItems={operationsNavItems}
       page={page}
       onNavigate={goTo}
       onHome={onHome}
-      eyebrow="OPERATIONS"
+      eyebrow="Operations"
       subtitle="Manage deliveries, select destinations and monitor robot activity."
       robotInfo={{ name: "UniDelivery Robot", line: "Operations Console · v1.0" }}
       footerText="Operations Console v1.0"
@@ -1142,7 +1168,7 @@ function OperationsDashboard({ onHome }) {
               {overviewCards.map(([icon, tone, label, title, value, note]) => (
                 <div className="stat-card" key={title}>
                   <div className="stat-card-top">
-                    <span className={`stat-icon ${tone}`}>{icon}</span>
+                    <span className={`stat-icon ${tone}`}><Icon g={icon} /></span>
                     <span className="mini-label">{label}</span>
                   </div>
                   <p>{title}</p>
@@ -1278,7 +1304,7 @@ function OperationsDashboard({ onHome }) {
               <div className="success-banner" role="status">
                 <span>✓ {lastCreated} added to the delivery queue.</span>
                 <button className="text-button" onClick={() => goTo("Delivery Queue")}>
-                  View queue <span>→</span>
+                  View queue
                 </button>
               </div>
             )}
@@ -1647,128 +1673,82 @@ function LoginScreen() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
-        background: "#0b1120",
-        color: "#f8fafc",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <form
-        onSubmit={handleLogin}
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          padding: "36px",
-          borderRadius: "16px",
-          background: "#151f32",
-          border: "1px solid #29364c",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: "30px" }}>
-          <div style={{ fontSize: "42px", fontWeight: "bold" }}>
-            U<span style={{ color: "#38bdf8" }}>D</span>
+    <div className="auth">
+      <aside className="auth-aside">
+        <div className="brand-lockup">
+          <div className="brand-mark">U<span>D</span></div>
+          <div className="brand-name">
+            <strong>UniDelivery</strong>
+            <small>Robotics systems</small>
           </div>
-
-          <h1 style={{ marginBottom: "8px" }}>UniDelivery</h1>
-
-          <p style={{ color: "#94a3b8", fontSize: "13px" }}>
-            ROBOTICS MANAGEMENT SYSTEM
-          </p>
-
-          <p style={{ color: "#cbd5e1", marginTop: "24px" }}>
-            Sign in to access the control portal.
+        </div>
+        <svg className="portal-art" viewBox="0 0 600 300" aria-hidden="true">
+          <path d="M30 150 H570 M190 150 V80 M190 150 V220 M410 150 V80 M410 150 V220" />
+          <circle cx="190" cy="80" r="9" />
+          <circle cx="190" cy="220" r="9" />
+          <circle cx="410" cy="80" r="9" />
+          <circle cx="410" cy="220" r="9" />
+          <rect x="30" y="136" width="44" height="28" rx="6" />
+        </svg>
+        <div className="auth-pitch">
+          <h2>Indoor delivery, from request to handover.</h2>
+          <p>
+            Manage deliveries and keep the robot's hardware in working order
+            from one console.
           </p>
         </div>
+      </aside>
 
-        <label style={{ display: "block", marginBottom: "8px" }}>
-          Email address
-        </label>
+      <main className="auth-main">
+        <form className="auth-form" onSubmit={handleLogin}>
+          <div className="auth-brand-sm">
+            <div className="brand-mark">U<span>D</span></div>
+          </div>
+          <div>
+            <h1>Sign in</h1>
+            <p className="auth-sub">Use your UniDelivery account to open the control portal.</p>
+          </div>
 
-        <input
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="Enter your email"
-          required
-          autoComplete="username"
-          style={{
-            boxSizing: "border-box",
-            width: "100%",
-            padding: "13px",
-            marginBottom: "20px",
-            borderRadius: "8px",
-            border: "1px solid #475569",
-            background: "#0f172a",
-            color: "white",
-          }}
-        />
+          <div className="auth-field">
+            <label htmlFor="login-email">Email address</label>
+            <input
+              id="login-email"
+              className="text-input"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="name@university.edu"
+              required
+              autoComplete="username"
+            />
+          </div>
 
-        <label style={{ display: "block", marginBottom: "8px" }}>
-          Password
-        </label>
+          <div className="auth-field">
+            <label htmlFor="login-password">Password</label>
+            <input
+              id="login-password"
+              className="text-input"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter your password"
+              required
+              autoComplete="current-password"
+            />
+          </div>
 
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="Enter your password"
-          required
-          autoComplete="current-password"
-          style={{
-            boxSizing: "border-box",
-            width: "100%",
-            padding: "13px",
-            marginBottom: "20px",
-            borderRadius: "8px",
-            border: "1px solid #475569",
-            background: "#0f172a",
-            color: "white",
-          }}
-        />
+          {error && <div className="form-error" role="alert">{error}</div>}
 
-        {error && (
-          <p style={{ color: "#f87171", fontSize: "13px" }}>
-            {error}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "14px",
-            border: "none",
-            borderRadius: "8px",
-            background: "#0891b2",
-            color: "white",
-            fontWeight: "bold",
-            cursor: loading ? "wait" : "pointer",
-          }}
-        >
-          {loading ? "Signing in..." : "Sign In"}
-        </button>
-
-        <p
-          style={{
-            textAlign: "center",
-            color: "#64748b",
-            fontSize: "12px",
-            marginTop: "24px",
-          }}
-        >
-          Authorised users only
-        </p>
-      </form>
+          <button className="primary-button auth-submit" type="submit" disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+          <p className="auth-foot">Authorised users only</p>
+        </form>
+      </main>
     </div>
   );
 }
+
 /* ==========================================================================
    APP ROOT
    ========================================================================== */
@@ -1799,18 +1779,7 @@ function App() {
   // Wait until Firebase checks the authentication state.
   if (authLoading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "grid",
-          placeItems: "center",
-          background: "#0b1120",
-          color: "white",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        Loading UniDelivery...
-      </div>
+      <div className="auth-loading">Loading UniDelivery…</div>
     );
   }
 
