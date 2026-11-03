@@ -130,6 +130,7 @@ function getPathPoints(phase, stationId) {
 }
 
 const ICONS = {
+  bell: (<><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/></>),
   "▦": (<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>),
   "⚙": (<><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></>),
   "⌖": (<><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></>),
@@ -170,6 +171,11 @@ function DashboardShell({
   subtitle,
   robotInfo,
   footerText,
+  user,
+  onLogout,
+  onSwitch,
+  view,
+  alerts = 0,
   children,
 }) {
   return (
@@ -204,6 +210,19 @@ function DashboardShell({
           </nav>
 
           <div className="sidebar-divider" />
+          <div className="sidebar-label">Dashboards</div>
+          {[["operations", "Operations", "☰"], ["maintenance", "Maintenance", "⚙"]].map(([key, label, glyph]) => (
+            <button
+              key={key}
+              className={view === key ? "nav-item switch current" : "nav-item switch"}
+              onClick={() => onSwitch(key)}
+              aria-current={view === key ? "true" : undefined}
+            >
+              <span className="nav-icon"><Icon g={glyph} /></span>
+              <span>{label}</span>
+            </button>
+          ))}
+          <div className="sidebar-divider" />
           <button
             className="nav-item portal-link"
             onClick={onHome}
@@ -236,19 +255,25 @@ function DashboardShell({
           </div>
 
           <div className="topbar-right">
-            <button className="secondary-button" onClick={onHome}>
-              <span>←</span> Main Portal
-            </button>
-            <div className="simulation-pill">
+            <div className="status-chip">
               <span className="simulation-dot" />
-              Simulation mode
+              Robot: simulation mode
             </div>
-            <div className="system-label">
-              <span className="system-label-icon">UD</span>
-              <span>
-                <strong>System Panel</strong>
-                <small>Local interface</small>
+            <button
+              className="icon-button"
+              aria-label={alerts ? "1 new notification" : "No new notifications"}
+              title={alerts ? "Robot arrived – awaiting PIN" : "No new notifications"}
+            >
+              <Icon g="bell" />
+              {alerts > 0 && <span className="notif-dot" />}
+            </button>
+            <div className="profile">
+              <span className="profile-avatar">{(user?.email || "U")[0].toUpperCase()}</span>
+              <span className="profile-text">
+                <strong>{user?.email || "Signed in"}</strong>
+                <small>Authorised user</small>
               </span>
+              <button className="secondary-button" onClick={onLogout}>Sign out</button>
             </div>
           </div>
         </header>
@@ -344,7 +369,7 @@ function Portal({ onOpen, onLogout }) {
    MAINTENANCE DASHBOARD (existing features preserved)
    ========================================================================== */
 
-function MaintenanceDashboard({ onHome }) {
+function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
   const [page, setPage] = useState("Overview");
   const [motors, setMotors] = useState(initialMotors);
   const [fan, setFan] = useState(false);
@@ -409,6 +434,10 @@ function MaintenanceDashboard({ onHome }) {
       subtitle="Monitor, inspect and manage robot hardware systems."
       robotInfo={{ name: "UniDelivery Robot", line: "Maintenance Panel · v1.2" }}
       footerText="Maintenance Panel v1.2"
+      user={user}
+      onLogout={onLogout}
+      onSwitch={onSwitch}
+      view="maintenance"
     >
       {page === "Overview" && (
         <>
@@ -491,6 +520,37 @@ function MaintenanceDashboard({ onHome }) {
               <div className="mapping-summary-item">
                 <strong>--</strong>
                 <p>Map coverage</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="section">
+            <div className="section-heading">
+              <div>
+                <h2>Power and motor load</h2>
+                <p>Battery state and live PWM output for each motor.</p>
+              </div>
+            </div>
+            <div className="panel-row">
+              <div className="stat-card gauge-card">
+                <div className="gauge-wrap">
+                  <svg viewBox="0 0 120 120" className="gauge" aria-hidden="true">
+                    <circle className="gauge-track" cx="60" cy="60" r="50" />
+                    <circle className="gauge-fill" cx="60" cy="60" r="50" strokeDasharray="314" strokeDashoffset="314" />
+                  </svg>
+                  <div className="gauge-text"><strong>--</strong><small>Battery %</small></div>
+                </div>
+                <p>Awaiting sensor data</p>
+              </div>
+              <div className="stat-card bars-card">
+                <div className="bars" role="img" aria-label="PWM output per motor">
+                  {motors.map((m) => (
+                    <div key={m.id} className="bar-col">
+                      <div className="bar-track"><div className="bar-fill" style={{ height: `${(m.pwm / 255) * 100}%` }} /></div>
+                      <small>M{pad(m.id)}</small>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </section>
@@ -861,11 +921,27 @@ function MaintenanceDashboard({ onHome }) {
    OPERATIONS DASHBOARD
    ========================================================================== */
 
+const trackSteps = ["Pending", "Preparing", "In Transit", "Arrived", "Completed"];
+
+function DeliveryTrack({ status }) {
+  if (status === "Cancelled") return null;
+  const at = trackSteps.indexOf(status);
+  return (
+    <ol className="delivery-track" aria-label={`Progress: ${status}`}>
+      {trackSteps.map((step, i) => (
+        <li key={step} className={i < at || status === "Completed" ? "done" : i === at ? "current" : ""}>
+          <span />{step}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 function StatusBadge({ status }) {
   return <span className={`status-badge ${statusClass[status]}`}>{status}</span>;
 }
 
-function OperationsDashboard({ onHome }) {
+function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
   const [page, setPage] = useState("Operations Overview");
   const [deliveries, setDeliveries] = useState([]);
   const [nextNumber, setNextNumber] = useState(1);
@@ -1093,6 +1169,10 @@ function OperationsDashboard({ onHome }) {
   ];
 
   const pathPoints = getPathPoints(robot.phase, robot.stationId);
+  const traveled = pathPoints.length === 0 ? [] :
+    robot.phase === "arrived" || robot.phase === "collecting"
+      ? pathPoints
+      : [...pathPoints.slice(0, robot.routeIndex + 1), { x: robot.x, y: robot.y }];
 
   const overviewCards = [
     ["◈", "cyan", "ROBOT", "Operating Status", phaseLabels[robot.phase], "Simulated status"],
@@ -1137,6 +1217,11 @@ function OperationsDashboard({ onHome }) {
       subtitle="Manage deliveries, select destinations and monitor robot activity."
       robotInfo={{ name: "UniDelivery Robot", line: "Operations Console · v1.0" }}
       footerText="Operations Console v1.0"
+      user={user}
+      onLogout={onLogout}
+      onSwitch={onSwitch}
+      view="operations"
+      alerts={robot.phase === "arrived" ? 1 : 0}
     >
       {robot.phase === "arrived" && page !== "Delivery Completion" && (
         <div className="alert-banner" role="status">
@@ -1162,6 +1247,29 @@ function OperationsDashboard({ onHome }) {
                 <p>Robot and delivery status. All values are simulated.</p>
               </div>
               <span className="tag">Simulated data</span>
+            </div>
+
+            <div className="kpi-grid">
+              <div className="kpi">
+                <span className="mini-label">Robot status</span>
+                <strong>{phaseLabels[robot.phase]}</strong>
+                <span className={robotBusy ? "health warn" : "health ok"}>{robotBusy ? "Active" : "Ready"}</span>
+              </div>
+              <div className="kpi">
+                <span className="mini-label">Total deliveries</span>
+                <strong>{pad(deliveries.length)}</strong>
+                <small>{completedCount} completed · {pendingCount} pending</small>
+              </div>
+              <div className="kpi">
+                <span className="mini-label">Battery level</span>
+                <strong>{Math.round(robot.battery)}%</strong>
+                <div className="progress-track"><div className="progress-fill" style={{ width: `${robot.battery}%` }} /></div>
+              </div>
+              <div className="kpi">
+                <span className="mini-label">System health</span>
+                <strong>{robot.battery < 30 ? "Low battery" : "Healthy"}</strong>
+                <span className={robot.battery < 30 ? "health warn" : "health ok"}>{robot.battery < 30 ? "Attention" : "All checks passed"}</span>
+              </div>
             </div>
 
             <div className="overview-grid">
@@ -1371,6 +1479,7 @@ function OperationsDashboard({ onHome }) {
                       <span className="field-label">CREATED</span>
                       <span>{item.createdAt}</span>
                     </div>
+                    <DeliveryTrack status={item.status} />
                     <div className="delivery-actions">
                       {item.status === "Pending" && (
                         <>
@@ -1433,6 +1542,12 @@ function OperationsDashboard({ onHome }) {
                 role="img"
                 aria-label="Simulated top-down map showing the robot, corridor, dock and four rooms"
               >
+                <defs>
+                  <pattern id="map-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M20 0H0V20" className="map-grid-line" />
+                  </pattern>
+                </defs>
+                <rect width="600" height="300" fill="url(#map-grid)" />
                 <rect className="map-corridor" x="30" y="130" width="540" height="40" rx="6" />
                 {initialStations.map((station) => {
                   const layout = stationLayout[station.id];
@@ -1466,6 +1581,11 @@ function OperationsDashboard({ onHome }) {
                     </g>
                   );
                 })}
+                <rect className="map-obstacle" x="290" y="133" width="24" height="8" rx="2" />
+                <rect className="map-obstacle" x="470" y="159" width="24" height="8" rx="2" />
+                {initialStations.map((s) => (
+                  <rect key={`desk-${s.id}`} className="map-obstacle" x={stationLayout[s.id].roomX + 12} y={stationLayout[s.id].roomY + (s.id % 2 ? 62 : 28)} width="30" height="14" rx="2" />
+                ))}
                 <rect className="map-dock" x="30" y="130" width="60" height="40" rx="6" />
                 <text className="map-label" x="60" y="184" textAnchor="middle">DOCK</text>
 
@@ -1476,6 +1596,9 @@ function OperationsDashboard({ onHome }) {
                   />
                 )}
 
+                {traveled.length > 1 && (
+                  <polyline className="map-done" points={traveled.map((p) => `${p.x},${p.y}`).join(" ")} />
+                )}
                 <g transform={`translate(${robot.x} ${robot.y}) rotate(${robot.angle})`}>
                   <rect className="robot-body" x="-15" y="-11" width="30" height="22" rx="5" />
                   <rect className="robot-drawer" x="-10" y="-7" width="9" height="14" rx="2" />
@@ -1487,6 +1610,8 @@ function OperationsDashboard({ onHome }) {
                 <span><i className="legend-robot" /> Robot</span>
                 <span><i className="legend-route" /> Planned route</span>
                 <span><i className="legend-dock" /> Charging dock</span>
+                <span><i className="legend-done" /> Completed route</span>
+                <span><i className="legend-obstacle" /> Obstacle</span>
               </div>
             </div>
 
@@ -1801,12 +1926,18 @@ function App() {
       <div hidden={view !== "maintenance"}>
         <MaintenanceDashboard
           onHome={() => setView("portal")}
+          user={user}
+          onLogout={() => signOut(auth)}
+          onSwitch={setView}
         />
       </div>
 
       <div hidden={view !== "operations"}>
         <OperationsDashboard
           onHome={() => setView("portal")}
+          user={user}
+          onLogout={() => signOut(auth)}
+          onSwitch={setView}
         />
       </div>
     </>
