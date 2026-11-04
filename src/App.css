@@ -105,6 +105,7 @@ input:focus-visible {
 .brand-mark {
   width: 42px;
   height: 42px;
+  overflow: hidden;
   color: #eafcff;
   background: linear-gradient(145deg, #1a596b, #16364d);
   border: 1px solid #327589;
@@ -113,8 +114,11 @@ input:focus-visible {
   box-shadow: 0 7px 22px rgba(23, 139, 159, .12);
 }
 
-.brand-mark span {
-  color: #58d3dc;
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .brand-name strong,
@@ -2313,3 +2317,18 @@ body,.dashboard,.auth,.auth-loading{background:var(--bg)}
 .joystick-readout span{display:flex;flex-direction:column;gap:2px;padding:10px;background:#0b1522;border:1px solid var(--border);border-radius:8px;text-align:center}
 .joystick-readout small{color:var(--muted);font-size:12px}
 .joystick-readout strong{color:#9be4ea;font-variant-numeric:tabular-nums}
+
+.brand-mark img,
+.portal-mark img,
+.robot-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-mark,
+.portal-mark,
+.robot-avatar {
+  overflow: hidden;
+}
