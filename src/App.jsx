@@ -73,9 +73,9 @@ const operationsNavItems = [
   { label: "Delivery Completion", icon: "✓" },
 ];
 
+// Positions inside the 600 x 300 simulated map. Rooms open onto a corridor at y = 150.
 const DOCK = { x: 60, y: 150 };
 const CORRIDOR_Y = 150;
-
 const stationLayout = {
   1: { x: 190, y: 80, roomX: 140, roomY: 20 },
   2: { x: 190, y: 220, roomX: 140, roomY: 170 },
@@ -83,7 +83,7 @@ const stationLayout = {
   4: { x: 410, y: 220, roomX: 360, roomY: 170 },
 };
 
-const ROBOT_STEP = 6;
+const ROBOT_STEP = 6; // pixels moved every 100 ms
 const PREPARING_MS = 2500;
 const COLLECTING_MS = 4000;
 const DEMO_PIN = "1234";
@@ -98,7 +98,7 @@ const statusClass = {
 };
 
 const initialRobot = {
-  phase: "idle",
+  phase: "idle", // idle | preparing | outbound | arrived | collecting | returning
   x: DOCK.x,
   y: DOCK.y,
   angle: 0,
@@ -110,27 +110,23 @@ const initialRobot = {
 
 const lockedDrawers = { 1: "Locked", 2: "Locked" };
 
+// Points the robot still has to reach (excluding where it starts).
 function getRoute(phase, stationId) {
   const layout = stationLayout[stationId];
   if (!layout) return [];
-
   const junction = { x: layout.x, y: CORRIDOR_Y };
-
   return phase === "returning"
     ? [junction, DOCK]
     : [junction, { x: layout.x, y: layout.y }];
 }
 
+// Full path used for drawing the route line.
 function getPathPoints(phase, stationId) {
   const layout = stationLayout[stationId];
   if (!layout) return [];
-
   const junction = { x: layout.x, y: CORRIDOR_Y };
   const room = { x: layout.x, y: layout.y };
-
-  return phase === "returning"
-    ? [room, junction, DOCK]
-    : [DOCK, junction, room];
+  return phase === "returning" ? [room, junction, DOCK] : [DOCK, junction, room];
 }
 
 const ICONS = {
@@ -155,16 +151,14 @@ const ICONS = {
 
 function Icon({ g }) {
   return ICONS[g] ? (
-    <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
-      {ICONS[g]}
-    </svg>
+    <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">{ICONS[g]}</svg>
   ) : (
     g
   );
 }
 
 /* ==========================================================================
-   SHARED DASHBOARD SHELL
+   SHARED DASHBOARD SHELL (sidebar + top bar + footer)
    ========================================================================== */
 
 function DashboardShell({
@@ -189,10 +183,7 @@ function DashboardShell({
       <aside className="sidebar">
         <div>
           <div className="brand-lockup">
-            <div className="brand-mark">
-              <img src="/images/unidelivery-logo.png" alt="UniDelivery Logo" />
-            </div>
-
+            <div className="brand-mark">U<span>D</span></div>
             <div className="brand-name">
               <strong>UniDelivery</strong>
               <small>Robotics systems</small>
@@ -219,9 +210,7 @@ function DashboardShell({
           </nav>
 
           <div className="sidebar-divider" />
-
           <div className="sidebar-label">Dashboards</div>
-
           {[["operations", "Operations", "☰"], ["maintenance", "Maintenance", "⚙"]].map(([key, label, glyph]) => (
             <button
               key={key}
@@ -233,9 +222,7 @@ function DashboardShell({
               <span>{label}</span>
             </button>
           ))}
-
           <div className="sidebar-divider" />
-
           <button
             className="nav-item portal-link"
             onClick={onHome}
@@ -248,9 +235,7 @@ function DashboardShell({
         </div>
 
         <div className="sidebar-bottom">
-          <div className="robot-avatar">
-            <img src="/images/unidelivery-logo.png" alt="UniDelivery Logo" />
-          </div>
+          <div className="robot-avatar">UD</div>
           <div className="sidebar-robot-info">
             <strong>{robotInfo.name}</strong>
             <small>{robotInfo.line}</small>
@@ -307,7 +292,6 @@ function DashboardShell({
 /* ==========================================================================
    LANDING PORTAL
    ========================================================================== */
-
 function Portal({ onOpen, onLogout }) {
   return (
     <div className="portal">
@@ -322,9 +306,7 @@ function Portal({ onOpen, onLogout }) {
 
       <div className="portal-inner">
         <div className="portal-hero">
-          <div className="portal-mark">
-            <img src="/images/unidelivery-logo.png" alt="UniDelivery Logo" />
-          </div>
+          <div className="portal-mark">U<span>D</span></div>
           <h1>UniDelivery</h1>
           <div className="portal-subtitle">Robotics management system</div>
           <p>
@@ -384,7 +366,7 @@ function Portal({ onOpen, onLogout }) {
 }
 
 /* ==========================================================================
-   MAINTENANCE DASHBOARD
+   MAINTENANCE DASHBOARD (existing features preserved)
    ========================================================================== */
 
 function Joystick({ onMove }) {
@@ -398,7 +380,6 @@ function Joystick({ onMove }) {
     const vertical = y > 0.35 ? "Forward" : y < -0.35 ? "Backward" : "";
     const horizontal = x > 0.35 ? "Right" : x < -0.35 ? "Left" : "";
     const label = [vertical, horizontal].filter(Boolean).join(" ") || "Idle";
-
     if (label !== lastLabel.current) {
       lastLabel.current = label;
       onMove(label);
@@ -412,12 +393,10 @@ function Joystick({ onMove }) {
     let dx = event.clientX - (rect.left + radius);
     let dy = event.clientY - (rect.top + radius);
     const distance = Math.hypot(dx, dy);
-
     if (distance > travel) {
       dx = (dx / distance) * travel;
       dy = (dy / distance) * travel;
     }
-
     publish(Math.round((dx / travel) * 100) / 100, Math.round((-dy / travel) * 100) / 100);
   }
 
@@ -427,16 +406,9 @@ function Joystick({ onMove }) {
   }
 
   function handleKey(event, pressed) {
-    const keys = {
-      ArrowUp: [0, 1],
-      ArrowDown: [0, -1],
-      ArrowLeft: [-1, 0],
-      ArrowRight: [1, 0],
-    };
-
+    const keys = { ArrowUp: [0, 1], ArrowDown: [0, -1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
     if (!keys[event.key]) return;
     event.preventDefault();
-
     if (pressed) publish(...keys[event.key]);
     else publish(0, 0);
   }
@@ -469,7 +441,6 @@ function Joystick({ onMove }) {
           style={{ left: `${50 + pos.x * 31}%`, top: `${50 - pos.y * 31}%` }}
         />
       </div>
-
       <div className="joystick-readout">
         <span><small>X</small><strong>{pos.x.toFixed(2)}</strong></span>
         <span><small>Y</small><strong>{pos.y.toFixed(2)}</strong></span>
@@ -570,7 +541,6 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
                 <h3>{robotMode}</h3>
                 <small className="muted-note">Current system state</small>
               </div>
-
               <div className="stat-card">
                 <div className="stat-card-top">
                   <span className="stat-icon green"><Icon g="⌁" /></span>
@@ -580,7 +550,6 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
                 <h3>-- <span className="unit">%</span></h3>
                 <small className="muted-note">Awaiting sensor data</small>
               </div>
-
               <div className="stat-card">
                 <div className="stat-card-top">
                   <span className="stat-icon amber"><Icon g="♨" /></span>
@@ -590,7 +559,6 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
                 <h3>-- <span className="unit">°C</span></h3>
                 <small className="muted-note">Awaiting sensor data</small>
               </div>
-
               <div className="stat-card">
                 <div className="stat-card-top">
                   <span className="stat-icon violet"><Icon g="❄" /></span>
@@ -610,7 +578,10 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
                 <h2>Mapping System</h2>
                 <p>Environment exploration and map-building status.</p>
               </div>
-              <button className="text-button" onClick={() => setPage("Mapping & Navigation")}>
+              <button
+                className="text-button"
+                onClick={() => setPage("Mapping & Navigation")}
+              >
                 Open mapping
               </button>
             </div>
@@ -641,7 +612,6 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
                 <p>Battery state and live PWM output for each motor.</p>
               </div>
             </div>
-
             <div className="panel-row">
               <div className="stat-card gauge-card">
                 <div className="gauge-wrap">
@@ -653,7 +623,6 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
                 </div>
                 <p>Awaiting sensor data</p>
               </div>
-
               <div className="stat-card bars-card">
                 <div className="bars" role="img" aria-label="PWM output per motor">
                   {motors.map((m) => (
@@ -674,7 +643,10 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
                 <h2>Motor Overview</h2>
                 <p>Six motor channels and their current interface values.</p>
               </div>
-              <button className="text-button" onClick={() => setPage("Motor Control")}>
+              <button
+                className="text-button"
+                onClick={() => setPage("Motor Control")}
+              >
                 Manage motors
               </button>
             </div>
@@ -691,7 +663,10 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
                   </div>
                   <h3>{motor.pwm}<small> / 255 PWM</small></h3>
                   <div className="progress-track">
-                    <div className="progress-fill" style={{ width: `${(motor.pwm / 255) * 100}%` }} />
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${(motor.pwm / 255) * 100}%` }}
+                    />
                   </div>
                 </div>
               ))}
@@ -867,7 +842,6 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
               </div>
             ))}
           </div>
-
           <div className="notice">
             <span className="notice-icon">i</span>
             <p>
@@ -935,7 +909,6 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
               </div>
             ))}
           </div>
-
           <div className="notice">
             <span className="notice-icon">i</span>
             <p>Indicator toggles currently change only the frontend simulation state.</p>
@@ -1010,7 +983,6 @@ function MaintenanceDashboard({ onHome, user, onLogout, onSwitch }) {
           <button className="stop-button large-stop" onClick={stopAll}>
             ■ &nbsp; EMERGENCY STOP
           </button>
-
           <div className="notice">
             <span className="notice-icon">!</span>
             <p>
@@ -1032,9 +1004,7 @@ const trackSteps = ["Pending", "Preparing", "In Transit", "Arrived", "Completed"
 
 function DeliveryTrack({ status }) {
   if (status === "Cancelled") return null;
-
   const at = trackSteps.indexOf(status);
-
   return (
     <ol className="delivery-track" aria-label={`Progress: ${status}`}>
       {trackSteps.map((step, i) => (
@@ -1093,13 +1063,13 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
 
   const destinationLabel = activeStation ? stationName(activeStation) : "None";
 
+  // Robot movement simulation: advance a few pixels every 100 ms.
   useEffect(() => {
     if (robot.phase !== "outbound" && robot.phase !== "returning") return undefined;
 
     const timer = setInterval(() => {
       setRobot((prev) => {
         if (prev.phase !== "outbound" && prev.phase !== "returning") return prev;
-
         const route = getRoute(prev.phase, prev.stationId);
         const target = route[prev.routeIndex];
         if (!target) return prev;
@@ -1113,13 +1083,8 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
         if (distance <= ROBOT_STEP) {
           const nextIndex = prev.routeIndex + 1;
           const base = { ...prev, x: target.x, y: target.y, angle, battery };
-
           if (nextIndex < route.length) return { ...base, routeIndex: nextIndex };
-
-          if (prev.phase === "outbound") {
-            return { ...base, routeIndex: 0, phase: "arrived" };
-          }
-
+          if (prev.phase === "outbound") return { ...base, routeIndex: 0, phase: "arrived" };
           return {
             ...base,
             routeIndex: 0,
@@ -1143,25 +1108,23 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
     return () => clearInterval(timer);
   }, [robot.phase]);
 
+  // Preparing -> In Transit after a short delay.
   useEffect(() => {
     if (robot.phase !== "preparing") return undefined;
-
     const timer = setTimeout(() => {
       setDeliveries((prev) =>
         prev.map((item) =>
           item.id === robot.activeId ? { ...item, status: "In Transit" } : item
         )
       );
-
       setRobot((prev) => ({ ...prev, phase: "outbound", routeIndex: 0 }));
     }, PREPARING_MS);
-
     return () => clearTimeout(timer);
   }, [robot.phase, robot.activeId]);
 
+  // Robot reaches destination -> mark delivery Arrived.
   useEffect(() => {
     if (robot.phase !== "arrived") return;
-
     setDeliveries((prev) =>
       prev.map((item) =>
         item.id === robot.activeId && item.status === "In Transit"
@@ -1171,25 +1134,22 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
     );
   }, [robot.phase, robot.activeId]);
 
+  // After the drawer has been open for a while, lock it and return to dock.
   useEffect(() => {
     if (robot.phase !== "collecting") return undefined;
-
     const timer = setTimeout(() => {
       setDrawers(lockedDrawers);
       setRobot((prev) => ({ ...prev, phase: "returning", routeIndex: 0 }));
     }, COLLECTING_MS);
-
     return () => clearTimeout(timer);
   }, [robot.phase]);
 
   function createDelivery() {
     const item = form.item.trim();
-
     if (!item) {
       setFormError("Please describe the item to be delivered.");
       return;
     }
-
     const created = {
       id: nextId,
       stationId: form.stationId,
@@ -1199,7 +1159,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
       status: "Pending",
       createdAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
-
     setDeliveries((prev) => [...prev, created]);
     setNextNumber((number) => number + 1);
     setForm((prev) => ({ ...prev, item: "", recipient: "" }));
@@ -1209,18 +1168,14 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
 
   function startDelivery(id) {
     if (robot.phase !== "idle") return;
-
     const target = deliveries.find((item) => item.id === id);
     if (!target || target.status !== "Pending") return;
-
     setDeliveries((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status: "Preparing" } : item))
     );
-
     setDrawers(lockedDrawers);
     setPin("");
     setPinMessage(null);
-
     setRobot((prev) => ({
       ...prev,
       phase: "preparing",
@@ -1238,7 +1193,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
           : item
       )
     );
-
     if (robot.activeId === id && robot.phase === "preparing") {
       setRobot((prev) => ({ ...prev, phase: "idle", activeId: null, stationId: null }));
     }
@@ -1246,13 +1200,11 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
 
   function cancelAndReturn() {
     if (robot.phase !== "arrived") return;
-
     setDeliveries((prev) =>
       prev.map((item) =>
         item.id === robot.activeId ? { ...item, status: "Cancelled" } : item
       )
     );
-
     setDrawers(lockedDrawers);
     setPin("");
     setPinMessage(null);
@@ -1261,18 +1213,14 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
 
   function verifyPin() {
     if (robot.phase !== "arrived" || !activeDelivery) return;
-
     if (pin === DEMO_PIN) {
       setDrawers((prev) => ({ ...prev, [activeDelivery.drawer]: "Unlocked" }));
-
       setDeliveries((prev) =>
         prev.map((item) =>
           item.id === activeDelivery.id ? { ...item, status: "Completed" } : item
         )
       );
-
       setRobot((prev) => ({ ...prev, phase: "collecting" }));
-
       setPinMessage({
         type: "success",
         text: `PIN accepted (simulated). Drawer ${activeDelivery.drawer} unlocked.`,
@@ -1283,7 +1231,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
         text: "Incorrect PIN (simulated). The drawer remains locked.",
       });
     }
-
     setPin("");
   }
 
@@ -1293,7 +1240,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
 
   const progress =
     activeDelivery?.status === "Completed" ? 4 : activeDelivery?.status === "Arrived" ? 1 : 0;
-
   const completionSteps = [
     "Robot arrived",
     "PIN entered on robot keypad",
@@ -1302,7 +1248,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
   ];
 
   const pathPoints = getPathPoints(robot.phase, robot.stationId);
-
   const traveled = pathPoints.length === 0 ? [] :
     robot.phase === "arrived" || robot.phase === "collecting"
       ? pathPoints
@@ -1429,7 +1374,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
                 <p>Create a delivery, start it from the queue and watch the robot.</p>
               </div>
             </div>
-
             <div className="mapping-actions">
               <button className="primary-button" onClick={() => goTo("Create Delivery")}>
                 ＋ Create a Delivery
@@ -1441,7 +1385,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
                 Open Live Monitoring
               </button>
             </div>
-
             <div className="notice">
               <span className="notice-icon">i</span>
               <p>
@@ -1589,14 +1532,12 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
             <div className="delivery-list">
               {[...deliveries].reverse().map((item) => {
                 const station = initialStations.find((s) => s.id === item.stationId);
-
                 return (
                   <div className="delivery-card" key={item.id}>
                     <div className="delivery-cell delivery-main">
                       <strong>{item.id}</strong>
                       <StatusBadge status={item.status} />
                     </div>
-
                     <div className="delivery-cell">
                       <span className="field-label">DESTINATION</span>
                       <span className="dest-inline">
@@ -1604,25 +1545,20 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
                         {stationName(station)}
                       </span>
                     </div>
-
                     <div className="delivery-cell">
                       <span className="field-label">DRAWER</span>
                       <span>Drawer {item.drawer}</span>
                     </div>
-
                     <div className="delivery-cell delivery-item">
                       <span className="field-label">ITEM</span>
                       <span>{item.item}</span>
                       {item.recipient && <small>For {item.recipient}</small>}
                     </div>
-
                     <div className="delivery-cell">
                       <span className="field-label">CREATED</span>
                       <span>{item.createdAt}</span>
                     </div>
-
                     <DeliveryTrack status={item.status} />
-
                     <div className="delivery-actions">
                       {item.status === "Pending" && (
                         <>
@@ -1639,25 +1575,21 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
                           </button>
                         </>
                       )}
-
                       {item.status === "Preparing" && (
                         <button className="stop-button" onClick={() => cancelDelivery(item.id)}>
                           Cancel
                         </button>
                       )}
-
                       {item.status === "In Transit" && (
                         <button className="secondary-button" onClick={() => goTo("Live Monitoring")}>
                           Track
                         </button>
                       )}
-
                       {item.status === "Arrived" && (
                         <button className="secondary-button" onClick={() => goTo("Delivery Completion")}>
                           Open arrival
                         </button>
                       )}
-
                       {(item.status === "Completed" || item.status === "Cancelled") && (
                         <span className="no-action">No actions</span>
                       )}
@@ -1694,13 +1626,10 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
                     <path d="M20 0H0V20" className="map-grid-line" />
                   </pattern>
                 </defs>
-
                 <rect width="600" height="300" fill="url(#map-grid)" />
                 <rect className="map-corridor" x="30" y="130" width="540" height="40" rx="6" />
-
                 {initialStations.map((station) => {
                   const layout = stationLayout[station.id];
-
                   return (
                     <g key={station.id}>
                       <rect
@@ -1731,22 +1660,11 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
                     </g>
                   );
                 })}
-
                 <rect className="map-obstacle" x="290" y="133" width="24" height="8" rx="2" />
                 <rect className="map-obstacle" x="470" y="159" width="24" height="8" rx="2" />
-
                 {initialStations.map((s) => (
-                  <rect
-                    key={`desk-${s.id}`}
-                    className="map-obstacle"
-                    x={stationLayout[s.id].roomX + 12}
-                    y={stationLayout[s.id].roomY + (s.id % 2 ? 62 : 28)}
-                    width="30"
-                    height="14"
-                    rx="2"
-                  />
+                  <rect key={`desk-${s.id}`} className="map-obstacle" x={stationLayout[s.id].roomX + 12} y={stationLayout[s.id].roomY + (s.id % 2 ? 62 : 28)} width="30" height="14" rx="2" />
                 ))}
-
                 <rect className="map-dock" x="30" y="130" width="60" height="40" rx="6" />
                 <text className="map-label" x="60" y="184" textAnchor="middle">DOCK</text>
 
@@ -1760,7 +1678,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
                 {traveled.length > 1 && (
                   <polyline className="map-done" points={traveled.map((p) => `${p.x},${p.y}`).join(" ")} />
                 )}
-
                 <g transform={`translate(${robot.x} ${robot.y}) rotate(${robot.angle})`}>
                   <rect className="robot-body" x="-15" y="-11" width="30" height="22" rx="5" />
                   <rect className="robot-drawer" x="-10" y="-7" width="9" height="14" rx="2" />
@@ -1768,7 +1685,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
                   <rect className="robot-front" x="12" y="-6" width="4" height="12" rx="2" />
                 </g>
               </svg>
-
               <div className="map-legend">
                 <span><i className="legend-robot" /> Robot</span>
                 <span><i className="legend-route" /> Planned route</span>
@@ -1799,7 +1715,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
                 <span className="field-label">BATTERY (SIMULATED)</span>
                 <strong>{Math.round(robot.battery)} %</strong>
               </div>
-
               <div className="notice">
                 <span className="notice-icon">i</span>
                 <p>
@@ -1925,7 +1840,6 @@ function OperationsDashboard({ onHome, user, onLogout, onSwitch }) {
     </DashboardShell>
   );
 }
-
 /* ==========================================================================
    FIREBASE LOGIN
    ========================================================================== */
@@ -1965,10 +1879,13 @@ function LoginScreen() {
   return (
     <div className="auth">
       <aside className="auth-aside">
-        <div className="brand-mark">
-          <img src="/images/unidelivery-logo.png" alt="UniDelivery Logo" />
+        <div className="brand-lockup">
+          <div className="brand-mark">U<span>D</span></div>
+          <div className="brand-name">
+            <strong>UniDelivery</strong>
+            <small>Robotics systems</small>
+          </div>
         </div>
-
         <svg className="portal-art" viewBox="0 0 600 300" aria-hidden="true">
           <path d="M30 150 H570 M190 150 V80 M190 150 V220 M410 150 V80 M410 150 V220" />
           <circle cx="190" cy="80" r="9" />
@@ -1977,7 +1894,6 @@ function LoginScreen() {
           <circle cx="410" cy="220" r="9" />
           <rect x="30" y="136" width="44" height="28" rx="6" />
         </svg>
-
         <div className="auth-pitch">
           <h2>Indoor delivery, from request to handover.</h2>
           <p>
@@ -1990,11 +1906,8 @@ function LoginScreen() {
       <main className="auth-main">
         <form className="auth-form" onSubmit={handleLogin}>
           <div className="auth-brand-sm">
-            <div className="brand-mark">
-              <img src="/images/unidelivery-logo.png" alt="UniDelivery Logo" />
-            </div>
+            <div className="brand-mark">U<span>D</span></div>
           </div>
-
           <div>
             <h1>Sign in</h1>
             <p className="auth-sub">Use your UniDelivery account to open the control portal.</p>
@@ -2044,11 +1957,16 @@ function LoginScreen() {
    APP ROOT
    ========================================================================== */
 
+/* ==========================================================================
+   APP ROOT
+   ========================================================================== */
+
 function App() {
   const [view, setView] = useState("portal");
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
+  // Check whether a Firebase user is signed in.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -2062,14 +1980,19 @@ function App() {
     window.scrollTo(0, 0);
   }, [view]);
 
+  // Wait until Firebase checks the authentication state.
   if (authLoading) {
-    return <div className="auth-loading">Loading UniDelivery…</div>;
+    return (
+      <div className="auth-loading">Loading UniDelivery…</div>
+    );
   }
 
+  // Show login screen if nobody is signed in.
   if (!user) {
     return <LoginScreen />;
   }
 
+  // Show the existing dashboards after successful login.
   return (
     <>
       <div hidden={view !== "portal"}>
