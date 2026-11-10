@@ -1,0 +1,52 @@
+/* ==========================================================================
+   SIGN IN / CREATE ACCOUNT (moved from App.css, unchanged, plus new additions below)
+   ========================================================================== */
+.auth{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:var(--bg)}
+.auth-aside{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:40px;padding:44px 56px;overflow:hidden;background:#0d1a24;border-right:1px solid var(--border)}
+.auth-aside .brand-lockup{padding:0;position:relative}
+.auth-aside .portal-art{inset:auto auto 4% 50%;width:125%;transform:translateX(-50%);stroke:rgba(79,196,207,.16)}
+.auth-pitch{position:relative;max-width:460px}
+.auth-pitch h2{font-size:clamp(28px,3.2vw,40px);font-weight:600;line-height:1.15;letter-spacing:-.8px;color:#f1f6fb}
+.auth-pitch p{margin-top:16px;color:var(--muted);font-size:16px;line-height:1.65}
+.auth-main{display:grid;place-items:center;padding:40px 24px}
+.auth-form{display:flex;flex-direction:column;gap:20px;width:100%;max-width:380px}
+.auth-form h1{font-size:28px;font-weight:600;letter-spacing:-.5px}
+.auth-sub{margin-top:8px;color:var(--muted);font-size:15px}
+.auth-field label{display:block;margin-bottom:8px;color:#c5d0dc;font-size:14px;font-weight:500}
+.auth-submit{width:100%;min-height:48px;font-size:15px;margin-top:4px}
+.auth-foot{color:#71869d;font-size:13px;text-align:center}
+.auth-brand-sm{display:none}
+.auth-loading{display:grid;place-items:center;min-height:100vh;color:var(--muted);background:var(--bg)}
+.portal-signout{margin-top:24px}
+@media (max-width:860px){.auth{grid-template-columns:1fr}.auth-aside{display:none}.auth-brand-sm{display:block}}
+
+
+/* ---- Additions: account tabs, password field, access screen ---- */
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--border);border-radius:10px}
+.auth-tab{min-height:44px;color:var(--muted);background:transparent;border:0;border-radius:7px;font-size:14px;font-weight:600}
+.auth-tab:hover{color:#dbe5ee}
+.auth-tab.active{color:#9be4ea;background:rgba(79,196,207,.12)}
+.password-field{position:relative}
+.password-field .text-input{padding-right:50px}
+.password-toggle{position:absolute;top:0;right:0;display:grid;place-items:center;width:48px;height:100%;color:var(--muted);background:transparent;border:0;border-radius:0 8px 8px 0}
+.password-toggle:hover{color:#e5f4f6}
+.password-toggle .icon{width:19px;height:19px}
+.auth-hint{margin-top:6px;color:#71869d;font-size:13px}
+.auth-foot{line-height:1.55}
+.auth-form h1{margin:0}
+
+.access-screen{padding:24px}
+.access-card{display:flex;flex-direction:column;align-items:flex-start;gap:16px;width:100%;max-width:440px;padding:28px;color:var(--text);background:var(--panel);border:1px solid var(--border);border-radius:14px}
+.access-card h1{margin:0;font-size:24px;font-weight:600;letter-spacing:-.4px}
+.access-card p{color:var(--muted);font-size:15px;line-height:1.65}
+.access-card strong{color:#dbe5ee;overflow-wrap:anywhere}
+.access-actions{display:flex;flex-wrap:wrap;gap:10px;width:100%}
+.access-actions button{flex:1 1 140px;min-height:46px}
+
+@media (max-width:860px){
+  .auth-main{align-items:start;padding:28px 20px 40px}
+  .auth-brand-sm{margin-bottom:4px}
+}
+
+.access-detail{padding:10px 12px;color:#c5d0dc!important;background:rgba(113,52,64,.18);border:1px solid #5b3440;border-radius:8px;font-size:13px!important;line-height:1.55}
+.access-detail code{color:#f2a7b0;font-family:ui-monospace,Consolas,monospace}

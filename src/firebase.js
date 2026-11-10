@@ -1,7 +1,7 @@
-
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import { initializeFirestore, setLogLevel } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDW3Chza18OLI5mpuy_ppHe0cuAlZKwpBg",
@@ -18,5 +18,16 @@ const app = initializeApp(firebaseConfig);
 
 export const database = getDatabase(app);
 export const auth = getAuth(app);
+
+// Firestore stores each user's role at users/{uid}.
+// Auto-detecting long polling lets Firestore still connect on networks,
+// antivirus or proxies that block its default streaming connection.
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+});
+
+// TEMPORARY: detailed Firestore logs in the browser console for debugging.
+// Delete this line once the problem is solved.
+setLogLevel("debug");
 
 export default app;

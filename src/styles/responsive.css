@@ -1,0 +1,178 @@
+/* ==========================================================================
+   RESPONSIVE LAYER (Maintenance and Operations dashboards, admin portal)
+   - Phones (<= 720px): the sidebar becomes a slide-out menu opened from the
+     bar at the top of the page, replacing the old 68px icon rail.
+   - Touch: buttons and menu items are at least 44px tall; form fields use a
+     16px font so iOS does not zoom in when they are focused.
+   Loaded after App.css so these rules take priority on small screens.
+   ========================================================================== */
+
+/* Elements that only exist for the mobile menu */
+.mobile-bar,
+.sidebar-close,
+.sidebar-backdrop {
+  display: none;
+}
+
+.sidebar-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Admin landing page: three cards */
+.portal-inner.portal-inner-wide {
+  max-width: 1120px;
+}
+
+.portal-cards.portal-cards-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .portal-cards.portal-cards-three {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+/* Tablets: keep the fixed sidebar but let the top bar wrap cleanly */
+@media (max-width: 950px) {
+  .topbar {
+    flex-wrap: wrap;
+  }
+}
+
+/* Phones */
+@media (max-width: 720px) {
+  .sidebar {
+    width: min(300px, 86vw);
+    padding: 20px 14px 18px;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform .22s ease, visibility 0s linear .22s;
+    box-shadow: none;
+  }
+
+  .sidebar.open {
+    transform: none;
+    visibility: visible;
+    transition: transform .22s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, .55);
+  }
+
+  .sidebar-close {
+    display: grid;
+    flex-shrink: 0;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    display: block;
+    background: rgba(3, 8, 14, .62);
+  }
+
+  .main-content {
+    width: 100%;
+    margin-left: 0;
+    padding: 0 16px 20px;
+  }
+
+  /* Top bar with menu button, page title and notifications */
+  .mobile-bar {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 -16px 18px;
+    padding: 10px 16px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    background: rgba(10, 17, 29, .96);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+  }
+
+  .mobile-bar-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: #e7edf5;
+    font-size: 16px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The bell already lives in the mobile bar */
+  .topbar-bell {
+    display: none;
+  }
+
+  /* Page title block under the bar: the bar already shows the page name */
+  .topbar {
+    margin-bottom: 22px;
+    padding-bottom: 16px;
+  }
+
+  .topbar-right {
+    width: 100%;
+  }
+
+  .profile {
+    width: 100%;
+    justify-content: space-between;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .profile-text {
+    display: block;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Touch sizing */
+  .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .nav-item,
+  .primary-button,
+  .secondary-button,
+  .stop-button {
+    min-height: 44px;
+  }
+
+  .text-input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .portal {
+    padding-top: calc(32px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .mobile-bar {
+    margin-right: -12px;
+    margin-left: -12px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+}
