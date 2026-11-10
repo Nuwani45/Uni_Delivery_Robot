@@ -1,7 +1,7 @@
+
 /* Role definitions for UniDelivery.
  * A user's role is stored in Firestore at users/{uid} in a field named "role".
- * Roles are assigned by an administrator in the Firebase console, except
- * "customer", which new sign-ups receive automatically. */
+ */
 
 export const ROLES = {
   CUSTOMER: "customer",
@@ -20,27 +20,33 @@ export const ROLE_LABELS = {
 /* Returns a valid role string, or null if the value is missing or unknown. */
 export function normaliseRole(value) {
   if (typeof value !== "string") return null;
+
   const role = value.trim().toLowerCase();
+
   return Object.values(ROLES).includes(role) ? role : null;
 }
 
-/* The views (portals) each role may open. Admins also get the "portal"
- * landing page that links to all three areas. */
+/* Returns the views each role is allowed to access. */
 export function allowedViews(role) {
   switch (role) {
     case ROLES.ADMIN:
       return ["portal", "customer", "operations", "maintenance"];
+
     case ROLES.CUSTOMER:
       return ["customer"];
+
     case ROLES.MAINTENANCE:
-      return ["maintenance"];
+      return ["maintenance", "operations"];
+
     case ROLES.OPERATIONS:
-      return ["operations"];
+      return ["operations", "maintenance"];
+
     default:
       return [];
   }
 }
 
+/* Determines the initial view after login. */
 export function homeView(role) {
   return allowedViews(role)[0] ?? null;
 }

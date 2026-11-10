@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
-import { initializeFirestore, setLogLevel } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDW3Chza18OLI5mpuy_ppHe0cuAlZKwpBg",
@@ -25,9 +25,5 @@ export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
   experimentalAutoDetectLongPolling: true,
 });
-
-// TEMPORARY: detailed Firestore logs in the browser console for debugging.
-// Delete this line once the problem is solved.
-setLogLevel("debug");
 
 export default app;
